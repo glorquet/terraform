@@ -7,7 +7,7 @@ description: |-
 
 ---
 
-# azurerm (formerly azure)
+# azurerm
 
 **Kind: Standard (with state locking)**
 
