@@ -28,7 +28,10 @@ func buildTestClient(t *testing.T, res resourceNames) *ArmClient {
 	clientSecret := os.Getenv("ARM_CLIENT_SECRET")
 	environment := os.Getenv("ARM_ENVIRONMENT")
 
-	if subscriptionID == "" || tenantID == "" || clientID == "" || clientSecret == "" {
+	// location isn't used in this method, but is in the other test methods
+	location := os.Getenv("ARM_LOCATION")
+
+	if subscriptionID == "" || tenantID == "" || clientID == "" || clientSecret == "" || environment == "" || location == "" {
 		t.Fatal("Azure credentials missing or incomplete")
 	}
 
