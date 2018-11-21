@@ -1,6 +1,7 @@
 package command
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 
@@ -24,11 +25,13 @@ func (c *StateMvCommand) Run(args []string) int {
 	var backupPathOut, statePathOut string
 
 	var dryRun bool
-	cmdFlags := c.Meta.flagSet("state mv")
+	cmdFlags := flag.NewFlagSet("state mv", flag.ContinueOnError)
 	cmdFlags.BoolVar(&dryRun, "dry-run", false, "dry run")
 	cmdFlags.StringVar(&c.backupPath, "backup", "-", "backup")
-	cmdFlags.StringVar(&c.statePath, "state", "", "path")
 	cmdFlags.StringVar(&backupPathOut, "backup-out", "-", "backup")
+	cmdFlags.BoolVar(&c.Meta.stateLock, "lock", true, "lock states")
+	cmdFlags.DurationVar(&c.Meta.stateLockTimeout, "lock-timeout", 0, "lock timeout")
+	cmdFlags.StringVar(&c.statePath, "state", "", "path")
 	cmdFlags.StringVar(&statePathOut, "state-out", "", "path")
 	if err := cmdFlags.Parse(args); err != nil {
 		return cli.RunResultHelp
@@ -300,6 +303,10 @@ Options:
                       file with a backup extension. This only needs
                       to be specified if -state-out is set to a different path
                       than -state.
+
+  -lock=true          Lock the state files when locking is supported.
+
+  -lock-timeout=0s    Duration to retry a state lock.
 
   -state=PATH         Path to the source state file. Defaults to the configured
                       backend, or "terraform.tfstate"

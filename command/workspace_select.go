@@ -1,6 +1,7 @@
 package command
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 
@@ -22,11 +23,12 @@ func (c *WorkspaceSelectCommand) Run(args []string) int {
 
 	envCommandShowWarning(c.Ui, c.LegacyName)
 
-	cmdFlags := c.Meta.flagSet("workspace select")
+	cmdFlags := flag.NewFlagSet("workspace select", flag.ContinueOnError)
 	cmdFlags.Usage = func() { c.Ui.Error(c.Help()) }
 	if err := cmdFlags.Parse(args); err != nil {
 		return 1
 	}
+
 	args = cmdFlags.Args()
 	if len(args) == 0 {
 		c.Ui.Error("Expected a single argument: NAME.\n")
@@ -131,6 +133,7 @@ func (c *WorkspaceSelectCommand) Help() string {
 Usage: terraform workspace select NAME [DIR]
 
   Select a different Terraform workspace.
+
 `
 	return strings.TrimSpace(helpText)
 }

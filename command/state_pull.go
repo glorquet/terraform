@@ -2,6 +2,7 @@ package command
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"strings"
 
@@ -22,7 +23,7 @@ func (c *StatePullCommand) Run(args []string) int {
 		return 1
 	}
 
-	cmdFlags := c.Meta.flagSet("state pull")
+	cmdFlags := flag.NewFlagSet("state pull", flag.ContinueOnError)
 	if err := cmdFlags.Parse(args); err != nil {
 		return cli.RunResultHelp
 	}
