@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/storage"
@@ -15,7 +16,7 @@ func TestRemoteClient_impl(t *testing.T) {
 	var _ remote.ClientLocker = new(RemoteClient)
 }
 
-func TestRemoteClient(t *testing.T) {
+func TestRemoteClientAccessKeyBasic(t *testing.T) {
 	testAccAzureBackend(t)
 	rs := acctest.RandString(4)
 	res := testResourceNames(rs, "testState")
@@ -44,7 +45,41 @@ func TestRemoteClient(t *testing.T) {
 	remote.TestClient(t, state.(*remote.State).Client)
 }
 
-func TestRemoteClientLocks(t *testing.T) {
+func TestRemoteClientServicePrincipalBasic(t *testing.T) {
+	testAccAzureBackend(t)
+	rs := acctest.RandString(4)
+	res := testResourceNames(rs, "testState")
+	armClient := buildTestClient(t, res)
+
+	ctx := context.TODO()
+	err := armClient.buildTestResources(ctx, &res)
+	if err != nil {
+		armClient.destroyTestResources(ctx, res)
+		t.Fatalf("Error creating Test Resources: %q", err)
+	}
+	defer armClient.destroyTestResources(ctx, res)
+
+	b := backend.TestBackendConfig(t, New(), backend.TestWrapConfig(map[string]interface{}{
+		"storage_account_name": res.storageAccountName,
+		"container_name":       res.storageContainerName,
+		"key":                  res.storageKeyName,
+		"resource_group_name":  res.resourceGroup,
+		"arm_subscription_id":  os.Getenv("ARM_SUBSCRIPTION_ID"),
+		"arm_tenant_id":        os.Getenv("ARM_TENANT_ID"),
+		"arm_client_id":        os.Getenv("ARM_CLIENT_ID"),
+		"arm_client_secret":    os.Getenv("ARM_CLIENT_SECRET"),
+		"environment":          os.Getenv("ARM_ENVIRONMENT"),
+	})).(*Backend)
+
+	state, err := b.StateMgr(backend.DefaultStateName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	remote.TestClient(t, state.(*remote.State).Client)
+}
+
+func TestRemoteClientAccessKeyLocks(t *testing.T) {
 	testAccAzureBackend(t)
 	rs := acctest.RandString(4)
 	res := testResourceNames(rs, "testState")
@@ -70,6 +105,57 @@ func TestRemoteClientLocks(t *testing.T) {
 		"container_name":       res.storageContainerName,
 		"key":                  res.storageKeyName,
 		"access_key":           res.storageAccountAccessKey,
+	})).(*Backend)
+
+	s1, err := b1.StateMgr(backend.DefaultStateName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s2, err := b2.StateMgr(backend.DefaultStateName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	remote.TestRemoteLocks(t, s1.(*remote.State).Client, s2.(*remote.State).Client)
+}
+
+func TestRemoteClientServicePrincipalLocks(t *testing.T) {
+	testAccAzureBackend(t)
+	rs := acctest.RandString(4)
+	res := testResourceNames(rs, "testState")
+	armClient := buildTestClient(t, res)
+
+	ctx := context.TODO()
+	err := armClient.buildTestResources(ctx, &res)
+	if err != nil {
+		armClient.destroyTestResources(ctx, res)
+		t.Fatalf("Error creating Test Resources: %q", err)
+	}
+	defer armClient.destroyTestResources(ctx, res)
+
+	b1 := backend.TestBackendConfig(t, New(), backend.TestWrapConfig(map[string]interface{}{
+		"storage_account_name": res.storageAccountName,
+		"container_name":       res.storageContainerName,
+		"key":                  res.storageKeyName,
+		"resource_group_name":  res.resourceGroup
+		"arm_subscription_id":  os.Getenv("ARM_SUBSCRIPTION_ID"),
+		"arm_tenant_id":        os.Getenv("ARM_TENANT_ID"),
+		"arm_client_id":        os.Getenv("ARM_CLIENT_ID"),
+		"arm_client_secret":    os.Getenv("ARM_CLIENT_SECRET"),
+		"environment":          os.Getenv("ARM_ENVIRONMENT"),
+	})).(*Backend)
+
+	b2 := backend.TestBackendConfig(t, New(), backend.TestWrapConfig(map[string]interface{}{
+		"storage_account_name": res.storageAccountName,
+		"container_name":       res.storageContainerName,
+		"key":                  res.storageKeyName,
+		"resource_group_name":  res.resourceGroup
+		"arm_subscription_id":  os.Getenv("ARM_SUBSCRIPTION_ID"),
+		"arm_tenant_id":        os.Getenv("ARM_TENANT_ID"),
+		"arm_client_id":        os.Getenv("ARM_CLIENT_ID"),
+		"arm_client_secret":    os.Getenv("ARM_CLIENT_SECRET"),
+		"environment":          os.Getenv("ARM_ENVIRONMENT"),
 	})).(*Backend)
 
 	s1, err := b1.StateMgr(backend.DefaultStateName)
