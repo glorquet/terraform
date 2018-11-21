@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2017-03-09/resources/mgmt/resources"
@@ -12,6 +13,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/hashicorp/go-azure-helpers/authentication"
+	"github.com/hashicorp/terraform/httpclient"
 )
 
 type ArmClient struct {
@@ -110,10 +112,20 @@ func (c ArmClient) getBlobClient(ctx context.Context) (*storage.BlobStorageClien
 }
 
 func (c *ArmClient) configureClient(client *autorest.Client, auth autorest.Authorizer) {
-	// TODO: fixme
-	//setUserAgent(client)
+	client.UserAgent = buildUserAgent()
 	client.Authorizer = auth
 	client.Sender = buildSender()
 	client.SkipResourceProviderRegistration = false
 	client.PollingDuration = 60 * time.Minute
+}
+
+func buildUserAgent() string {
+	userAgent := httpclient.UserAgentString()
+
+	// append the CloudShell version to the user agent if it exists
+	if azureAgent := os.Getenv("AZURE_HTTP_USER_AGENT"); azureAgent != "" {
+		userAgent = fmt.Sprintf("%s %s", userAgent, azureAgent)
+	}
+
+	return userAgent
 }
