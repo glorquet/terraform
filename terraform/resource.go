@@ -458,6 +458,12 @@ func (c *ResourceConfig) IsSet(k string) bool {
 
 func (c *ResourceConfig) get(
 	k string, raw map[string]interface{}) (interface{}, bool) {
+
+	k, errs := hcl2shim.AttributePathToLegacyPath(k)
+	if len(errs) > 0 {
+		panic(fmt.Errorf("%q: %q", k, errs))
+	}
+
 	parts := strings.Split(k, ".")
 	if len(parts) == 1 && parts[0] == "" {
 		parts = nil
