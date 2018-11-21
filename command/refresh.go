@@ -72,13 +72,15 @@ func (c *RefreshCommand) Run(args []string) int {
 
 	// Build the operation
 	opReq := c.Operation(b)
-	opReq.Type = backend.OperationTypeRefresh
 	opReq.ConfigDir = configPath
+	opReq.Type = backend.OperationTypeRefresh
+
 	opReq.ConfigLoader, err = c.initConfigLoader()
 	if err != nil {
 		c.showDiagnostics(err)
 		return 1
 	}
+
 	{
 		var moreDiags tfdiags.Diagnostics
 		opReq.Variables, moreDiags = c.collectVariableValues()

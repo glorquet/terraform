@@ -53,7 +53,6 @@ func (c *FmtCommand) Run(args []string) int {
 	cmdFlags.BoolVar(&c.check, "check", false, "check")
 	cmdFlags.BoolVar(&c.recursive, "recursive", false, "recursive")
 	cmdFlags.Usage = func() { c.Ui.Error(c.Help()) }
-
 	if err := cmdFlags.Parse(args); err != nil {
 		return 1
 	}

@@ -2,6 +2,7 @@ package command
 
 import (
 	"bufio"
+	"flag"
 	"strings"
 
 	"github.com/hashicorp/terraform/addrs"
@@ -25,7 +26,7 @@ func (c *ConsoleCommand) Run(args []string) int {
 		return 1
 	}
 
-	cmdFlags := c.Meta.flagSet("console")
+	cmdFlags := flag.NewFlagSet("console", flag.ContinueOnError)
 	cmdFlags.StringVar(&c.Meta.statePath, "state", DefaultStateFilename, "path")
 	cmdFlags.Usage = func() { c.Ui.Error(c.Help()) }
 	if err := cmdFlags.Parse(args); err != nil {
@@ -74,6 +75,7 @@ func (c *ConsoleCommand) Run(args []string) int {
 		c.showDiagnostics(diags)
 		return 1
 	}
+
 	{
 		var moreDiags tfdiags.Diagnostics
 		opReq.Variables, moreDiags = c.collectVariableValues()

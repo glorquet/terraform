@@ -2,6 +2,7 @@ package command
 
 import (
 	"bytes"
+	"flag"
 	"strings"
 
 	"github.com/hashicorp/terraform/tfdiags"
@@ -21,7 +22,7 @@ func (c *WorkspaceListCommand) Run(args []string) int {
 
 	envCommandShowWarning(c.Ui, c.LegacyName)
 
-	cmdFlags := c.Meta.flagSet("workspace list")
+	cmdFlags := flag.NewFlagSet("workspace list", flag.ContinueOnError)
 	cmdFlags.Usage = func() { c.Ui.Error(c.Help()) }
 	if err := cmdFlags.Parse(args); err != nil {
 		return 1
@@ -93,6 +94,7 @@ func (c *WorkspaceListCommand) Help() string {
 Usage: terraform workspace list [DIR]
 
   List Terraform workspaces.
+
 `
 	return strings.TrimSpace(helpText)
 }
