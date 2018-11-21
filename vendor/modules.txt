@@ -381,6 +381,10 @@ github.com/keybase/go-crypto/rsa
 github.com/keybase/go-crypto/brainpool
 github.com/keybase/go-crypto/cast5
 github.com/keybase/go-crypto/openpgp/elgamal
+# github.com/kr/pretty v0.1.0
+github.com/kr/pretty
+# github.com/kr/text v0.1.0
+github.com/kr/text
 # github.com/lusis/go-artifactory v0.0.0-20160115162124-7e4ce345df82
 github.com/lusis/go-artifactory/src/artifactory.v401
 # github.com/masterzen/azure-sdk-for-go v0.0.0-20161014135628-ee4f0065d00c
